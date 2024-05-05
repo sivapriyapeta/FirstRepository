@@ -1,0 +1,100 @@
+Legacy Countries - MY/PH/HK
+=============================================
+Shipment Import port = 8899
+
+CTOFTM-I => =|8899=8:00|8879=10:00|
+
+Forecast is available or not => Then I will pick up that Arrival date. = 06/05/2024
+Planflow - Skip
+Import date - Skip
+
+CTOFDTTM => 06/05/2024 8:00
+
+Validate with public holiday/weekends
+CTOFDTTM => 06/05/2024 8:00 
+CTOFDTTM => 06/05/2024 + 1 => 07/05/2024 => 08/05/2024 8:00
+
+Shipment references >> CTOFDTTM => 08/05/2024 8:00
+
+
+
+Orchestration Countries - Arizona(AU/SG)
+=============================================
+Shipment Import port = 8899
+flight - 5X1234
+
+CTOFTM-I => =|8899=22:00+3.15|8879=10:00|
+
+Forecast is available or not => Then I will pick up that Arrival date. = 06/05/2024
+Planflow - Skip
+Import date - Skip
+
+CTOFDTTM => 07/05/2024 1:15
+Flight number - 5X1234 - 23
+
+CTOFDTTM => 08/05/2024 0:15
+MET/NMT - MET - 2
+
+CTOFDTTM => 08/05/2024 2:15
+
+Validate with public holiday/weekends
+CTOFDTTM => 08/05/2024 2:15 
+CTOFDTTM => 06/05/2024 + 1 => 07/05/2024 => 08/05/2024 8:00 -- Skipped
+
+Shipment references >> CTOFDTTM => 08/05/2024 2:15
+
+
+
+Legacy Countries - ONLY TW - Modify for other legacies too to accommodate the same requirement everywhere
+==========================================================================================================
+if Shipment > Brokerage Status > SPR(Super Trigger Update) - N => New Type to insert
+return;
+
+Shipment Import port = 8899
+Shipment Service Level = 01
+Identify the Center SLIC Port based on plan flow- 8879
+
+CTOFTM-I => =|8899=8:00|8879=10:00| - if this exists then check for Service Level pick up the import port
+CTSLTM-I => ALL=40|8899=10:00|8879=05:00|
+
+Example Configuration for Center slic with Service level combination
+---------------------------------------------------------------------
+CTCSTM-I => Mon|8899=8:00|8879=10:00|
+CTCSTM-I => Tue|8899=8:00|8879=10:00|
+CTCSTM-I => Wed|8899=8:00|8879=10:00|
+CTCSTM-I => Thu|8899=8:00|8879=10:00|
+CTCSTM-I => Fri|8899=8:00|8879=10:00|
+
+CTSLTM-I => Tue=01|8899=8:00|8879=10:00|
+CTSLTM-I => Tue=29,21|8899=9:00|8879=22:00|
+CTSLTM-I => Tue=40|8899=10:00|8879=05:00|
+CTSLTM-I => ALL=40|8899=10:00|8879=05:00|
+
+CTSLTM-I => Mon=01,29,21,40|8899=8:00|8879=10:00|
+
+Forecast is available or not => Then I will pick up that Arrival date. = Skip
+Planflow - TW TW and G => SCHDPDT = 04/05/2024
+Import date - Skip
+
+if(CTCSTM not empty)
+{
+	Find the day for this 04/05/2024 = Saturday => Validate this with, Validate with public holiday/weekends
+	CTOFDTTM => 04/05/2024
+	CTOFDTTM => 04/05/2024 + 1 => 05/05/2024 + 1 => 06/05/2024 = get the day = Monday
+
+	Identify the Service level config based on Center slic and Monday - if this dosent exists
+	Then verify for CTCSTM configuration exists for Monday
+		CTCSTM-I => Mon|8899=8:00|8879=10:00|	=> available pick up, if not exit donot change or add CTOFDTTM
+}
+
+THEN CTOFDTTM => 06/05/2024 10:00
+
+Validate with public holiday/weekends
+----------------------------------------------
+This is default validation, this dosent make any change to the date and time as the validation was already over in 79 for center slic countries.
+For others this stays as the proper validation to check the public or weekend holidays.
+
+THEN CTOFDTTM => 06/05/2024 10:00
+
+Shipment references >> CTOFDTTM => 06/05/2024 10:00
+
